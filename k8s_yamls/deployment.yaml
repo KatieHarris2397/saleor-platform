@@ -35,7 +35,7 @@ spec:
           emptyDir: {}
       containers:
       - name: api
-        image: katieharris/saleor:v0.06
+        image: katieharris/saleor:v0.07
         ports:
         - containerPort: 8000
         volumeMounts:
