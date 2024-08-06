@@ -35,7 +35,7 @@ spec:
           emptyDir: {}
       containers:
       - name: api
-        image: katieharris/saleor:3.20
+        image: katieharris/saleor:v0.05
         ports:
         - containerPort: 8000
         volumeMounts:
@@ -43,9 +43,9 @@ spec:
           mountPath: /app/media
         env:
         - name: JAEGER_AGENT_HOST
-          value: jaeger
+          value: localhost
         - name: DASHBOARD_URL
-          value: http://localhost:9000/
+          value: http://saleor-deployment.saleor-test.svc.cluster.local/
         - name: ALLOWED_HOSTS
           value: localhost,api
         - name: DATABASE_URL
@@ -92,7 +92,7 @@ spec:
           mountPath: /data
 
       - name: worker
-        image: ghcr.io/saleor/saleor:3.20
+        image: katieharris/saleor:v0.05
         command: ["celery", "-A", "saleor", "--app=saleor.celeryconf:app", "worker", "--loglevel=info", "-B"]
         volumeMounts:
         - name: saleor-media
