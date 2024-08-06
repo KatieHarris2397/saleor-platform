@@ -31,8 +31,6 @@ spec:
           emptyDir: {}
         - name: saleor-redis
           emptyDir: {}
-        - name: replica-user-sql
-          emptyDir: {}
         - name: tmpfs
           emptyDir: {}
       containers:
@@ -63,9 +61,9 @@ spec:
         - name: DEFAULT_CHANNEL_SLUG
           value: default-channel
         - name: HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS
-          value: "true"
+          value: "True"
         - name: HTTP_IP_FILTER_ENABLED
-          value: "true"
+          value: "True"
 
       - name: dashboard
         image: ghcr.io/saleor/saleor-dashboard:latest
@@ -79,8 +77,6 @@ spec:
         volumeMounts:
         - name: saleor-db
           mountPath: /var/lib/postgresql/data
-        - name: replica-user-sql
-          mountPath: /docker-entrypoint-initdb.d/replica_user.sql
         env:
         - name: POSTGRES_USER
           value: saleor
@@ -115,9 +111,9 @@ spec:
         - name: DEFAULT_CHANNEL_SLUG
           value: default-channel
         - name: HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS
-          value: "true"
+          value: "True"
         - name: HTTP_IP_FILTER_ENABLED
-          value: "true"
+          value: "True"
       - name: jaeger
         image: jaegertracing/all-in-one:latest
         ports:
