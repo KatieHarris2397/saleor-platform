@@ -68,7 +68,7 @@ spec:
       - name: dashboard
         image: ghcr.io/saleor/saleor-dashboard:latest
         ports:
-        - containerPort: 9000
+        - containerPort: 80
 
       - name: db
         image: katieharris/saleor-db:15-alpine
