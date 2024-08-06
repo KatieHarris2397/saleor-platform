@@ -28,10 +28,9 @@ spec:
           emptyDir: {}
       containers:
       - name: api
-        image: ghcr.io/saleor/saleor:3.20
+        image: katieharris/saleor:3.20
         ports:
         - containerPort: 8000
-        restart: unless-stopped
         volumeMounts:
         - name: saleor-media
           mountPath: /app/media
@@ -63,13 +62,11 @@ spec:
         image: ghcr.io/saleor/saleor-dashboard:latest
         ports:
         - containerPort: 9000
-        restart: unless-stopped
 
       - name: db
-        image: library/postgres:15-alpine
+        image: katieharris/saleor-db:15-alpine
         ports:
         - containerPort: 5432
-        restart: unless-stopped
         volumeMounts:
         - name: saleor-db
           mountPath: /var/lib/postgresql/data
@@ -85,7 +82,6 @@ spec:
         image: library/redis:7.0-alpine
         ports:
         - containerPort: 6379
-        restart: unless-stopped
         volumeMounts:
         - name: saleor-redis
           mountPath: /data
@@ -93,7 +89,6 @@ spec:
       - name: worker
         image: ghcr.io/saleor/saleor:3.20
         command: ["celery", "-A", "saleor", "--app=saleor.celeryconf:app", "worker", "--loglevel=info", "-B"]
-        restart: unless-stopped
         volumeMounts:
         - name: saleor-media
           mountPath: /app/media
@@ -124,7 +119,6 @@ spec:
         - containerPort: 16686
         - containerPort: 14268
         - containerPort: 9411
-        restart: unless-stopped
         volumeMounts:
         - name: tmpfs
           mountPath: /tmp
@@ -134,4 +128,5 @@ spec:
         ports:
         - containerPort: 1025
         - containerPort: 8025
-        restart: unless-stopped
+        
+      restartPolicy: Always
