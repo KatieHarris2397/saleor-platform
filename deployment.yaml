@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: saleor-deployment
+  namespace: saleor-test
+  labels:
+    app: saleor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: saleor
+  template:
+    metadata:
+      labels:
+        app: saleor
+    spec:
+      volumes:
+        - name: saleor-media
+          emptyDir: {}
+        - name: saleor-db
+          emptyDir: {}
+        - name: saleor-redis
+          emptyDir: {}
+        - name: replica-user-sql
+          emptyDir: {}
+        - name: tmpfs
+          emptyDir: {}
+      containers:
+      - name: api
+        image: ghcr.io/saleor/saleor:3.20
+        ports:
+        - containerPort: 8000
+        restart: unless-stopped
+        volumeMounts:
+        - name: saleor-media
+          mountPath: /app/media
+        env:
+        - name: JAEGER_AGENT_HOST
+          value: jaeger
+        - name: DASHBOARD_URL
+          value: http://localhost:9000/
+        - name: ALLOWED_HOSTS
+          value: localhost,api
+        - name: DATABASE_URL
+          value: postgres://saleor:saleor@localhost:5432/saleor
+        - name: CELERY_BROKER_URL
+          value: redis://localhost:6379/1
+        - name: DEFAULT_FROM_EMAIL
+          value: noreply@example.com
+        - name: EMAIL_URL
+          value: smtp://localhost:1025
+        - name: SECRET_KEY
+          value: changeme
+        - name: DEFAULT_CHANNEL_SLUG
+          value: default-channel
+        - name: HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS
+          value: true
+        - name: HTTP_IP_FILTER_ENABLED
+          value: true
+
+      - name: dashboard
+        image: ghcr.io/saleor/saleor-dashboard:latest
+        ports:
+        - containerPort: 9000
+        restart: unless-stopped
+
+      - name: db
+        image: library/postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        restart: unless-stopped
+        volumeMounts:
+        - name: saleor-db
+          mountPath: /var/lib/postgresql/data
+        - name: replica-user-sql
+          mountPath: /docker-entrypoint-initdb.d/replica_user.sql
+        env:
+        - name: POSTGRES_USER
+          value: saleor
+        - name: POSTGRES_PASSWORD
+          value: saleor
+
+      - name: redis
+        image: library/redis:7.0-alpine
+        ports:
+        - containerPort: 6379
+        restart: unless-stopped
+        volumeMounts:
+        - name: saleor-redis
+          mountPath: /data
+
+      - name: worker
+        image: ghcr.io/saleor/saleor:3.20
+        command: ["celery", "-A", "saleor", "--app=saleor.celeryconf:app", "worker", "--loglevel=info", "-B"]
+        restart: unless-stopped
+        volumeMounts:
+        - name: saleor-media
+          mountPath: /app/media
+        env:
+        - name: DATABASE_URL
+          value: postgres://saleor:saleor@localhost:5432/saleor
+        - name: CELERY_BROKER_URL
+          value: redis://localhost:6379/1
+        - name: DEFAULT_FROM_EMAIL
+          value: noreply@example.com
+        - name: EMAIL_URL
+          value: smtp://localhost:1025
+        - name: SECRET_KEY
+          value: changeme
+        - name: DEFAULT_CHANNEL_SLUG
+          value: default-channel
+        - name: HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS
+          value: true
+        - name: HTTP_IP_FILTER_ENABLED
+          value: true
+      - name: jaeger
+        image: jaegertracing/all-in-one:latest
+        ports:
+        - containerPort: 5775
+        - containerPort: 6831
+        - containerPort: 6832
+        - containerPort: 5778
+        - containerPort: 16686
+        - containerPort: 14268
+        - containerPort: 9411
+        restart: unless-stopped
+        volumeMounts:
+        - name: tmpfs
+          mountPath: /tmp
+
+      - name: mailpit
+        image: axllent/mailpit:latest
+        ports:
+        - containerPort: 1025
+        - containerPort: 8025
+        restart: unless-stopped
