@@ -63,9 +63,9 @@ spec:
         - name: DEFAULT_CHANNEL_SLUG
           value: default-channel
         - name: HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS
-          value: true
+          value: "true"
         - name: HTTP_IP_FILTER_ENABLED
-          value: true
+          value: "true"
 
       - name: dashboard
         image: ghcr.io/saleor/saleor-dashboard:latest
@@ -115,9 +115,9 @@ spec:
         - name: DEFAULT_CHANNEL_SLUG
           value: default-channel
         - name: HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS
-          value: true
+          value: "true"
         - name: HTTP_IP_FILTER_ENABLED
-          value: true
+          value: "true"
       - name: jaeger
         image: jaegertracing/all-in-one:latest
         ports:
