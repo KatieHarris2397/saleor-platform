@@ -45,9 +45,9 @@ spec:
         - name: JAEGER_AGENT_HOST
           value: localhost
         - name: DASHBOARD_URL
-          value: http://saleor-deployment.saleor-test.svc.cluster.local/
+          value: http://saleor-service/
         - name: ALLOWED_HOSTS
-          value: localhost,api
+          value: localhost,saleor-service
         - name: DATABASE_URL
           value: postgres://saleor:saleor@localhost:5432/saleor
         - name: CELERY_BROKER_URL
@@ -71,7 +71,7 @@ spec:
         - containerPort: 80
         env:
         - name: API_URL
-          value: http://saleor-deployment.saleor-test.svc.cluster.local:8000/graphql/
+          value: http://saleor-service:8000/graphql/
 
       - name: db
         image: katieharris/saleor-db:15-alpine
