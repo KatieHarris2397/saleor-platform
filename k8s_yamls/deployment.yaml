@@ -70,7 +70,7 @@ spec:
         ports:
         - containerPort: 80
         env:
-        - name: API_URI
+        - name: API_URL
           value: http://saleor-deployment.saleor-test.svc.cluster.local:8000/graphql/
 
       - name: db
