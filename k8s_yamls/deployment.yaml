@@ -1,53 +1,42 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: saleor-test
-  labels:
-    name: saleor-test
-
----
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: saleor-deployment
   namespace: saleor-test
   labels:
-    app: saleor
+    app: saleor-commerce
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: saleor
+      app: saleor-commerce
   template:
     metadata:
       labels:
-        app: saleor
+        app: saleor-commerce
     spec:
       volumes:
-        - name: saleor-media
-          emptyDir: {}
-        - name: saleor-db
-          emptyDir: {}
-        - name: saleor-redis
-          emptyDir: {}
-        - name: tmpfs
-          emptyDir: {}
+      - name: saleor-media
+        emptyDir: {}
+      - name: saleor-redis
+        emptyDir: {}
+      - name: tmpfs
+        emptyDir: {}
       containers:
       - name: api
-        image: katieharris/saleor:v0.07
+        image: katieharris/saleor:v0.08
         ports:
         - containerPort: 8000
         volumeMounts:
         - name: saleor-media
-          mountPath: /app/media
+          mountPath: "/app/media"
         env:
         - name: JAEGER_AGENT_HOST
           value: localhost
         - name: DASHBOARD_URL
           value: http://saleor-service/
         - name: ALLOWED_HOSTS
-          value: localhost,saleor-service
+          value: localhost,saleor-commerce-service
         - name: DATABASE_URL
           value: postgres://saleor:saleor@localhost:5432/saleor
         - name: CELERY_BROKER_URL
@@ -61,45 +50,45 @@ spec:
         - name: DEFAULT_CHANNEL_SLUG
           value: default-channel
         - name: HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS
-          value: "True"
+          value: 'True'
         - name: HTTP_IP_FILTER_ENABLED
-          value: "True"
-
+          value: 'True'
       - name: dashboard
-        image: ghcr.io/saleor/saleor-dashboard:latest
+        image: katieharris/saleor-dashboard:v0.02
         ports:
         - containerPort: 80
         env:
         - name: API_URL
-          value: http://saleor-service:8000/graphql/
-
+          value: BASE_HOST_NAME_AND_PATH/api/
       - name: db
-        image: katieharris/saleor-db:15-alpine
+        image: katieharris/saleor-db:v0.03
         ports:
         - containerPort: 5432
-        volumeMounts:
-        - name: saleor-db
-          mountPath: /var/lib/postgresql/data
         env:
         - name: POSTGRES_USER
           value: saleor
         - name: POSTGRES_PASSWORD
           value: saleor
-
       - name: redis
         image: library/redis:7.0-alpine
         ports:
         - containerPort: 6379
         volumeMounts:
         - name: saleor-redis
-          mountPath: /data
-
+          mountPath: "/data"
       - name: worker
         image: ghcr.io/saleor/saleor:3.20
-        command: ["celery", "-A", "saleor", "--app=saleor.celeryconf:app", "worker", "--loglevel=info", "-B"]
+        command:
+        - celery
+        - "-A"
+        - saleor
+        - "--app=saleor.celeryconf:app"
+        - worker
+        - "--loglevel=info"
+        - "-B"
         volumeMounts:
         - name: saleor-media
-          mountPath: /app/media
+          mountPath: "/app/media"
         env:
         - name: DATABASE_URL
           value: postgres://saleor:saleor@localhost:5432/saleor
@@ -114,9 +103,9 @@ spec:
         - name: DEFAULT_CHANNEL_SLUG
           value: default-channel
         - name: HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS
-          value: "True"
+          value: 'True'
         - name: HTTP_IP_FILTER_ENABLED
-          value: "True"
+          value: 'True'
       - name: jaeger
         image: jaegertracing/all-in-one:latest
         ports:
@@ -129,12 +118,10 @@ spec:
         - containerPort: 9411
         volumeMounts:
         - name: tmpfs
-          mountPath: /tmp
-
+          mountPath: "/tmp"
       - name: mailpit
         image: axllent/mailpit:latest
         ports:
         - containerPort: 1025
         - containerPort: 8025
-
       restartPolicy: Always
